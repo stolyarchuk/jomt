@@ -442,9 +442,10 @@ void PlotterBarChart::loadConfig(bool init) {
   }
   settings.endArray();
 
-  QString prefix = "axis/x";
-  for (int idx = 0; idx < 2; ++idx) {
+  QStringList prefixes{"axis/x", "axis/y"};
+  for (int idx = 0; idx < mAxesParams.size(); ++idx) {
     auto& axis = mAxesParams[idx];
+    const auto prefix = prefixes[idx];
 
     if (auto value = settings.value(prefix + "/visible"); value.isValid()) {
       axis.visible = value.toBool();
@@ -497,7 +498,6 @@ void PlotterBarChart::loadConfig(bool init) {
       if (auto value = settings.value(prefix + "/max"); value.isValid() && !init)
         ui->doubleSpinBoxMax->setValue(value.toDouble());
     }
-    prefix = "axis/y";
     ui->comboBoxAxis->setCurrentIndex(1);
   }
   ui->comboBoxAxis->setCurrentIndex(0);
@@ -526,7 +526,7 @@ void PlotterBarChart::saveConfig() {
   settings.endArray();
 
   QStringList prefixes{"axis/x", "axis/y"};
-  for (int idx = 0; idx < 2; ++idx) {
+  for (int idx = 0; idx < mAxesParams.size(); ++idx) {
     const auto& axis = mAxesParams[idx];
     const auto prefix = prefixes[idx];
 
