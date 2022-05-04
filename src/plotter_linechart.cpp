@@ -479,7 +479,7 @@ void PlotterLineChart::saveConfig() {
   }
   settings.endArray();
 
-  QStringList prefixes{{"axis/x", "axis/y"}};
+  QStringList prefixes{"axis/x", "axis/y"};
   for (int i = 0; i < mAxesParams.size(); ++i) {
     settings.setValue(prefixes.at(i) + "/visible", mAxesParams.at(i).visible);
     settings.setValue(prefixes.at(i) + "/title", mAxesParams.at(i).title);
