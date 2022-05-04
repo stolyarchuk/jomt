@@ -425,18 +425,18 @@ void PlotterBarChart::loadConfig(bool init) {
   int series_size = settings.beginReadArray("series");
   for (int i = 0; i < series_size; ++i) {
     settings.setArrayIndex(i);
+    const auto oldname_value = settings.value("oldName");
+    const auto newname_value = settings.value("newName");
+    const auto newcolor_value = settings.value("newColor");
+    const auto newcolor_valid =
+        newcolor_value.isValid() && QColor::isValidColor(newcolor_value.toString());
 
-    const bool valid_oldname = settings.value("oldName").isValid();
-    const bool valid_newname = settings.value("newName").isValid();
-    const bool valid_newcolor = settings.value("newColor").isValid() &&
-                                QColor::isValidColor(settings.value("newColor").toString());
-
-    if (valid_oldname && valid_newname && valid_newcolor) {
-      SeriesConfig saved_config(settings.value("oldName").toString(), "");
+    if (oldname_value.isValid() && newname_value.isValid() && newcolor_valid) {
+      SeriesConfig saved_config(oldname_value.toString(), "");
 
       if (int idx = mSeriesMapping.indexOf(saved_config); idx >= 0) {
-        mSeriesMapping[idx].newName = settings.value("newName").toString();
-        mSeriesMapping[idx].newColor.setNamedColor(settings.value("newColor").toString());
+        mSeriesMapping[idx].newName = newname_value.toString();
+        mSeriesMapping[idx].newColor.setNamedColor(newcolor_value.toString());
       }
     }
   }
@@ -525,9 +525,10 @@ void PlotterBarChart::saveConfig() {
   }
   settings.endArray();
 
-  QString prefix = "axis/x";
+  QStringList prefixes{"axis/x", "axis/y"};
   for (int idx = 0; idx < 2; ++idx) {
     const auto& axis = mAxesParams[idx];
+    const auto prefix = prefixes[idx];
 
     settings.setValue(prefix + "/visible", axis.visible);
     settings.setValue(prefix + "/title", axis.title);
@@ -551,7 +552,6 @@ void PlotterBarChart::saveConfig() {
       settings.setValue(prefix + "/ticks", ui->spinBoxTicks->value());
       settings.setValue(prefix + "/mticks", ui->spinBoxMTicks->value());
     }
-    prefix = "axis/y";
   }
 
   settings.endGroup();
