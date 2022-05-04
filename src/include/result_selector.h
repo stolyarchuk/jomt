@@ -36,7 +36,8 @@ class ResultSelector : public QWidget {
   explicit ResultSelector(QWidget* parent = nullptr);
   explicit ResultSelector(const BenchResults& bchResults, const QString& fileName,
                           QWidget* parent = nullptr);
-  ~ResultSelector();
+
+  ~ResultSelector() override;
 
  private:
   void connectUI();

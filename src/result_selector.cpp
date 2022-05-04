@@ -24,6 +24,7 @@
 #include <QJsonObject>
 #include <QMessageBox>
 #include <QScreen>
+#include <QSettings>
 
 #include "plot_parameters.h"
 #include "plotter_3dbars.h"
@@ -33,8 +34,6 @@
 #include "plotter_linechart.h"
 #include "result_parser.h"
 #include "ui_result_selector.h"
-
-static const char* config_file = "config_selector.json";
 
 ResultSelector::ResultSelector(QWidget* parent)
     : QWidget(parent)
@@ -112,47 +111,29 @@ void ResultSelector::connectUI() {
 }
 
 void ResultSelector::loadConfig() {
-  // Load options from file
-  QFile configFile(QString(config_folder) + config_file);
-  if (configFile.open(QIODevice::ReadOnly)) {
-    QByteArray configData = configFile.readAll();
-    configFile.close();
-    QJsonDocument configDoc(QJsonDocument::fromJson(configData));
-    QJsonObject json = configDoc.object();
+  QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
 
-    // FileDialog
-    if (json.contains("workingDir") && json["workingDir"].isString())
-      mWorkingDir = json["workingDir"].toString();
-    // Actions
-    if (json.contains("autoReload") && json["autoReload"].isBool())
-      ui->checkBoxAutoReload->setChecked(json["autoReload"].toBool());
-  } else {
-    if (configFile.exists())
-      qWarning() << "Couldn't read: " << QString(config_folder) + config_file;
-  }
+  settings.beginGroup("selector");
+  ui->checkBoxAutoReload->setChecked(settings.value("autoReload", true).toBool());
+  mWorkingDir = settings.value("workingDir", "").toString();
+  settings.endGroup();
 
   // Default size
   QSize size = this->size();
   QSize newSize = QGuiApplication::primaryScreen()->size();
   newSize *= 0.375f;
+
   if (newSize.width() > size.width() && newSize.height() > size.height())
     this->resize(newSize.height() * 16.f / 9.f, newSize.height());
 }
 
 void ResultSelector::saveConfig() {
-  // Save options to file
-  QFile configFile(QString(config_folder) + config_file);
-  if (configFile.open(QIODevice::WriteOnly)) {
-    QJsonObject json;
+  QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
 
-    // FileDialog
-    json["workingDir"] = mWorkingDir;
-    // Actions
-    json["autoReload"] = ui->checkBoxAutoReload->isChecked();
-
-    configFile.write(QJsonDocument(json).toJson());
-  } else
-    qWarning() << "Couldn't update: " << QString(config_folder) + config_file;
+  settings.beginGroup("selector");
+  settings.setValue("autoReload", ui->checkBoxAutoReload->isChecked());
+  settings.setValue("workingDir", mWorkingDir);
+  settings.endGroup();
 }
 
 void ResultSelector::updateComboBoxY() {
