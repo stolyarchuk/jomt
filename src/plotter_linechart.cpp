@@ -18,9 +18,6 @@
 #include <QDateTime>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QMessageBox>
 #include <QtCharts>
 

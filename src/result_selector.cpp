@@ -17,11 +17,10 @@
 
 #include <QCollator>
 #include <QDateTime>
+#include <QDebug>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGuiApplication>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QMessageBox>
 #include <QScreen>
 #include <QSettings>

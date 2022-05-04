@@ -18,8 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 #include <QDateTime>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QMessageBox>
 #include <QtCharts>
 

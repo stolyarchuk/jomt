@@ -18,8 +18,6 @@
 #include <QDateTime>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QMessageBox>
 #include <QtDataVisualization>
 
@@ -27,16 +25,10 @@
 #include "result_parser.h"
 #include "ui_plotter_3dsurface.h"
 
-using QtDataVisualization::Q3DBars;
 using QtDataVisualization::Q3DSurface;
 using QtDataVisualization::Q3DTheme;
-using QtDataVisualization::QAbstract3DAxis;
 using QtDataVisualization::QAbstract3DGraph;
-using QtDataVisualization::QAbstract3DSeries;
-using QtDataVisualization::QBar3DSeries;
-using QtDataVisualization::QBarDataItem;
 using QtDataVisualization::QBarDataRow;
-using QtDataVisualization::QCategory3DAxis;
 using QtDataVisualization::QLogValue3DAxisFormatter;
 using QtDataVisualization::QSurface3DSeries;
 using QtDataVisualization::QSurfaceDataArray;
