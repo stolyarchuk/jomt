@@ -106,7 +106,7 @@ class PlotterLineChart : public QWidget {
   QFileSystemWatcher mWatcher;
   SeriesMapping mSeriesMapping;
   double mCurrentTimeFactor;  // from us
-  ValAxisParam mAxesParams[2];
+  QVector<ValAxisParam> mAxesParams{2};
   bool mIgnoreEvents = false;
 };
 
