@@ -33,3 +33,5 @@
 
 # Misc
 CMakeLists.txt.user
+build
+.vscode
