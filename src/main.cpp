@@ -41,10 +41,6 @@ int main(int argc, char* argv[]) {
   QCoreApplication::setApplicationVersion(APP_VER);
   QApplication::setWindowIcon(QIcon(APP_ICON));
 
-  QDir configDir(config_folder);
-  if (!configDir.exists())
-    configDir.mkpath(".");
-
   //
   // Command line options
   CommandLineHandler cmdHandler;

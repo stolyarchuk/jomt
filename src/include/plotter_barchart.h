@@ -109,7 +109,7 @@ class PlotterBarChart : public QWidget {
   QFileSystemWatcher mWatcher;
   SeriesMapping mSeriesMapping;
   double mCurrentTimeFactor;  // from us
-  QVector<AxisParam> mAxesParams;
+  QVector<AxisParam> mAxesParams{2};
   const bool mIsVert;
   bool mIgnoreEvents = false;
 };

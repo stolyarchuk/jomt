@@ -93,9 +93,9 @@ struct BenchData {
 
 // Benchmark Subset
 struct BenchSubset {
-  BenchSubset() {}
-  BenchSubset(const QString& name_) : name(name_) {}
-  BenchSubset(const QString& name_, int idx) : name(name_) { idxs.push_back(idx); }
+  BenchSubset() = default;
+  explicit BenchSubset(const QString& name_) : name(name_) {}
+  explicit BenchSubset(const QString& name_, int idx) : name(name_) { idxs.push_back(idx); }
 
   // Data
   QString name;

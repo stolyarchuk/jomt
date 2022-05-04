@@ -22,8 +22,6 @@
 
 #include "benchmark_results.h"
 
-extern const char* config_folder;
-
 // Chart types
 enum PlotChartType {
   ChartLineType,
