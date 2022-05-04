@@ -112,7 +112,7 @@ class Plotter3DBars : public QWidget {
   QFileSystemWatcher mWatcher;
   SeriesMapping mSeriesMapping;
   double mCurrentTimeFactor;  // from us
-  AxisParam mAxesParams[3];
+  QVector<AxisParam> mAxesParams{3};
   QVector<QLinearGradient> mGrads;
   bool mIgnoreEvents = false;
 };
