@@ -99,6 +99,10 @@ target_link_libraries(${PROJECT_NAME}
   Qt5::Charts
   Qt5::DataVisualization)
   
-include(cmake/colored_output.cmake)  
+message(STATUS "HOME: $ENV{HOME}")
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "" FORCE)
+endif()
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
