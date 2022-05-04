@@ -27,10 +27,6 @@
 #include "result_parser.h"
 #include "ui_plotter_3dbars.h"
 
-namespace {
-const bool kForceConfig = false;
-}
-
 using QtDataVisualization::Q3DBars;
 using QtDataVisualization::Q3DTheme;
 using QtDataVisualization::QAbstract3DAxis;
@@ -43,6 +39,10 @@ using QtDataVisualization::QCategory3DAxis;
 using QtDataVisualization::QLogValue3DAxisFormatter;
 using QtDataVisualization::QValue3DAxis;
 using QtDataVisualization::QValue3DAxisFormatter;
+
+namespace {
+const bool kForceConfig = false;
+}
 
 Plotter3DBars::Plotter3DBars(const BenchResults& bchResults, const QVector<int>& bchIdxs,
                              const PlotParams& plotParams, const QString& origFilename,
@@ -558,6 +558,7 @@ void Plotter3DBars::loadConfig(bool init) {
   for (int i = 0; i < mAxesParams.size(); ++i) {
     auto& axis = mAxesParams[i];
     const auto prefix = prefixes[i];
+    ui->comboBoxAxis->setCurrentIndex(i);
 
     if (auto value = settings.value(prefix + "/rotate"); value.isValid()) {
       axis.rotate = value.toBool();
@@ -583,8 +584,6 @@ void Plotter3DBars::loadConfig(bool init) {
         ui->comboBoxMax->setCurrentText(value.toString());
         axis.maxIdx = ui->comboBoxMax->currentIndex();
       }
-      if (i == 0)
-        ui->comboBoxAxis->setCurrentIndex(1);
     } else  // y-axis
     {
       if (auto value = settings.value(prefix + "/log"); value.isValid())
@@ -603,7 +602,6 @@ void Plotter3DBars::loadConfig(bool init) {
         ui->doubleSpinBoxMin->setValue(value.toDouble());
       if (auto value = settings.value(prefix + "/max"); value.isValid() && !init)
         ui->doubleSpinBoxMax->setValue(value.toDouble());
-      ui->comboBoxAxis->setCurrentIndex(2);
     }
   }
   ui->comboBoxAxis->setCurrentIndex(0);

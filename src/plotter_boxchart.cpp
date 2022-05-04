@@ -395,6 +395,7 @@ void PlotterBoxChart::loadConfig(bool init) {
   for (int i = 0; i < mAxesParams.size(); ++i) {
     auto& axis = mAxesParams[i];
     const auto prefix = prefixes[i];
+    ui->comboBoxAxis->setCurrentIndex(i);
 
     if (auto value = settings.value(prefix + "/visible"); value.isValid()) {
       axis.visible = value.toBool();
@@ -443,7 +444,6 @@ void PlotterBoxChart::loadConfig(bool init) {
       if (auto value = settings.value(prefix + "/max"); value.isValid() && !init)
         ui->doubleSpinBoxMax->setValue(value.toDouble());
     }
-    ui->comboBoxAxis->setCurrentIndex(1);
   }
   ui->comboBoxAxis->setCurrentIndex(0);
   settings.endGroup();

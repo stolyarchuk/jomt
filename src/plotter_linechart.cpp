@@ -402,6 +402,7 @@ void PlotterLineChart::loadConfig(bool init) {
   for (int i = 0; i < mAxesParams.size(); ++i) {
     auto& axis = mAxesParams[i];
     const auto prefix = prefixes[i];
+    ui->comboBoxAxis->setCurrentIndex(i);
 
     if (auto value = settings.value(prefix + "/visible"); value.isValid()) {
       axis.visible = value.toBool();
@@ -453,7 +454,6 @@ void PlotterLineChart::loadConfig(bool init) {
       axis.max = value.toDouble();
       ui->doubleSpinBoxMax->setValue(axis.max);
     }
-    ui->comboBoxAxis->setCurrentIndex(1);
   }
   ui->comboBoxAxis->setCurrentIndex(0);
   settings.endGroup();

@@ -112,10 +112,12 @@ void ResultSelector::connectUI() {
 
 void ResultSelector::loadConfig() {
   QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-
   settings.beginGroup("selector");
-  ui->checkBoxAutoReload->setChecked(settings.value("autoReload", true).toBool());
-  mWorkingDir = settings.value("workingDir", "").toString();
+
+  if (auto value = settings.value("autoReload"); value.isValid())
+    ui->checkBoxAutoReload->setChecked(value.toBool());
+  if (auto value = settings.value("workingDir"); value.isValid())
+    mWorkingDir = value.toString();
   settings.endGroup();
 
   // Default size
@@ -129,7 +131,6 @@ void ResultSelector::loadConfig() {
 
 void ResultSelector::saveConfig() {
   QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-
   settings.beginGroup("selector");
   settings.setValue("autoReload", ui->checkBoxAutoReload->isChecked());
   settings.setValue("workingDir", mWorkingDir);
