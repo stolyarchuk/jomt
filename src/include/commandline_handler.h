@@ -20,17 +20,14 @@
 
 class QApplication;
 
+class CommandLineHandler {
+ public:
+  CommandLineHandler();
 
-class CommandLineHandler
-{
-public:
-    CommandLineHandler();
-    
-    bool process(const QApplication& app);
-    
-private:
-    QCommandLineParser mParser;
+  bool process(const QApplication& app);
+
+ private:
+  QCommandLineParser mParser;
 };
 
-
-#endif // COMMANDLINEHANDLER_H
+#endif  // COMMANDLINEHANDLER_H

@@ -16,67 +16,65 @@
 #ifndef RESULT_SELECTOR_H
 #define RESULT_SELECTOR_H
 
-#include "benchmark_results.h"
-
-#include <QSet>
-#include <QVector>
-#include <QString>
-#include <QWidget>
 #include <QFileSystemWatcher>
+#include <QSet>
+#include <QString>
+#include <QVector>
+#include <QWidget>
+
+#include "benchmark_results.h"
 
 namespace Ui {
 class ResultSelector;
 }
 class QTreeWidgetItem;
 
+class ResultSelector : public QWidget {
+  Q_OBJECT
 
-class ResultSelector : public QWidget
-{
-    Q_OBJECT
-    
-public:
-    explicit ResultSelector(QWidget *parent = nullptr);
-    explicit ResultSelector(const BenchResults &bchResults, const QString &fileName, QWidget *parent = nullptr);
-    ~ResultSelector();
-    
-private:
-    void connectUI();
-    void loadConfig();
-    void saveConfig();
-    void updateComboBoxY();
-    void updateResults(bool clear, const QSet<QString> unselected = {});
-    
-public slots:
-    void onItemChanged(QTreeWidgetItem *item, int column);
-    
-    void onComboTypeChanged(int index);
-    void onComboXChanged(int index);
-    void onComboZChanged(int index);
-    
-    void onAutoReload(const QString &path);
-    void updateReloadWatchList();
-    void onCheckAutoReload(int state);
-    void onReloadClicked();
-    
-    void onNewClicked();
-    void onAppendClicked();
-    void onOverwriteClicked();
-    
-    void onSelectAllClicked();
-    void onSelectNoneClicked();
-    
-    void onPlotClicked();
-    
-private:
-    Ui::ResultSelector *ui;
-    
-    BenchResults mBchResults;
-    QString mOrigFilename;
-    QVector<FileReload> mAddFilenames;
-    
-    QString mWorkingDir;
-    QFileSystemWatcher mWatcher;
+ public:
+  explicit ResultSelector(QWidget* parent = nullptr);
+  explicit ResultSelector(const BenchResults& bchResults, const QString& fileName,
+                          QWidget* parent = nullptr);
+  ~ResultSelector();
+
+ private:
+  void connectUI();
+  void loadConfig();
+  void saveConfig();
+  void updateComboBoxY();
+  void updateResults(bool clear, const QSet<QString> unselected = {});
+
+ public slots:
+  void onItemChanged(QTreeWidgetItem* item, int column);
+
+  void onComboTypeChanged(int index);
+  void onComboXChanged(int index);
+  void onComboZChanged(int index);
+
+  void onAutoReload(const QString& path);
+  void updateReloadWatchList();
+  void onCheckAutoReload(int state);
+  void onReloadClicked();
+
+  void onNewClicked();
+  void onAppendClicked();
+  void onOverwriteClicked();
+
+  void onSelectAllClicked();
+  void onSelectNoneClicked();
+
+  void onPlotClicked();
+
+ private:
+  Ui::ResultSelector* ui;
+
+  BenchResults mBchResults;
+  QString mOrigFilename;
+  QVector<FileReload> mAddFilenames;
+
+  QString mWorkingDir;
+  QFileSystemWatcher mWatcher;
 };
 
-
-#endif // RESULT_SELECTOR_H
+#endif  // RESULT_SELECTOR_H

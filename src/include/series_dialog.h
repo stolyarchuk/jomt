@@ -16,49 +16,45 @@
 #ifndef SERIES_DIALOG_H
 #define SERIES_DIALOG_H
 
-#include <QDialog>
-#include <QVector>
-#include <QString>
 #include <QColor>
+#include <QDialog>
+#include <QString>
+#include <QVector>
 
 namespace Ui {
 class SeriesDialog;
 }
 
 struct SeriesConfig {
-    SeriesConfig(const QString &oldName_, const QString &newName_)
-        : oldName(oldName_)
-        , newName(newName_)
-    {}
-    
-    QString oldName, newName;
-    QColor oldColor, newColor;
+  SeriesConfig(const QString& oldName_, const QString& newName_)
+      : oldName(oldName_)
+      , newName(newName_) {}
+
+  QString oldName, newName;
+  QColor oldColor, newColor;
 };
 inline bool operator==(const SeriesConfig& lhs, const SeriesConfig& rhs) {
-    return (lhs.oldName == rhs.oldName);
+  return (lhs.oldName == rhs.oldName);
 }
-typedef QVector<SeriesConfig>   SeriesMapping;
+typedef QVector<SeriesConfig> SeriesMapping;
 
+class SeriesDialog : public QDialog {
+  Q_OBJECT
 
-class SeriesDialog : public QDialog
-{
-    Q_OBJECT
-    
-public:
-    explicit SeriesDialog(const SeriesMapping &mapping, QWidget *parent = nullptr);
-    ~SeriesDialog();
-    
-    const SeriesMapping& getMapping() { return mMapping; }
-    
-public slots:
-    virtual void accept();
-    void onRestoreClicked();
-    
-private:
-    Ui::SeriesDialog *ui;
-    
-    SeriesMapping mMapping;
+ public:
+  explicit SeriesDialog(const SeriesMapping& mapping, QWidget* parent = nullptr);
+  ~SeriesDialog();
+
+  const SeriesMapping& getMapping() { return mMapping; }
+
+ public slots:
+  virtual void accept();
+  void onRestoreClicked();
+
+ private:
+  Ui::SeriesDialog* ui;
+
+  SeriesMapping mMapping;
 };
 
-
-#endif // SERIES_DIALOG_H
+#endif  // SERIES_DIALOG_H

@@ -18,12 +18,9 @@
 
 #include "benchmark_results.h"
 
-
-class ResultParser
-{
-public:
-    static BenchResults parseJsonFile(const QString &filename, QString& errorMsg);
+class ResultParser {
+ public:
+  static BenchResults parseJsonFile(const QString& filename, QString& errorMsg);
 };
 
-
-#endif // RESULTPARSER_H
+#endif  // RESULTPARSER_H
