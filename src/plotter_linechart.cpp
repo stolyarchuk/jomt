@@ -401,54 +401,55 @@ void PlotterLineChart::loadConfig(bool init) {
 
   for (int i = 0; i < mAxesParams.size(); ++i) {
     auto& axis = mAxesParams[i];
+    const auto prefix = prefixes[i];
 
-    if (auto value = settings.value(prefixes.at(i) + "/visible"); value.isValid()) {
+    if (auto value = settings.value(prefix + "/visible"); value.isValid()) {
       axis.visible = value.toBool();
       ui->checkBoxAxisVisible->setChecked(axis.visible);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/title"); value.isValid()) {
+    if (auto value = settings.value(prefix + "/title"); value.isValid()) {
       axis.title = value.toBool();
       ui->checkBoxTitle->setChecked(axis.title);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/log"); value.isValid()) {
+    if (auto value = settings.value(prefix + "/log"); value.isValid()) {
       axis.log = value.toBool();
       ui->checkBoxLog->setChecked(axis.log);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/logBase", 10); value.isValid()) {
+    if (auto value = settings.value(prefix + "/logBase", 10); value.isValid()) {
       axis.logBase = value.toInt();
       ui->spinBoxLogBase->setValue(axis.logBase);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/titleSize", 8); value.isValid()) {
+    if (auto value = settings.value(prefix + "/titleSize", 8); value.isValid()) {
       axis.titleSize = value.toInt();
       ui->spinBoxTitleSize->setValue(axis.titleSize);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/labelFormat"); value.isValid()) {
+    if (auto value = settings.value(prefix + "/labelFormat"); value.isValid()) {
       axis.labelFormat = value.toString();
       ui->lineEditFormat->setText(axis.labelFormat);
       ui->lineEditFormat->setCursorPosition(0);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/labelSize", 8); value.isValid()) {
+    if (auto value = settings.value(prefix + "/labelSize", 8); value.isValid()) {
       axis.labelSize = value.toInt();
       ui->spinBoxLabelSize->setValue(axis.labelSize);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/ticks", ticks[i]); value.isValid()) {
+    if (auto value = settings.value(prefix + "/ticks", ticks[i]); value.isValid()) {
       axis.ticks = value.toInt();
       ui->spinBoxTicks->setValue(axis.ticks);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/mticks", 0); value.isValid()) {
+    if (auto value = settings.value(prefix + "/mticks", 0); value.isValid()) {
       axis.mticks = value.toInt();
       ui->spinBoxMTicks->setValue(axis.mticks);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/titleText"); value.isValid() && !init) {
+    if (auto value = settings.value(prefix + "/titleText"); value.isValid() && !init) {
       axis.titleText = value.toString();
       ui->lineEditTitle->setText(axis.titleText);
       ui->lineEditTitle->setCursorPosition(0);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/min"); value.isValid() && i == 1) {
+    if (auto value = settings.value(prefix + "/min"); value.isValid() && i == 1) {
       axis.min = value.toDouble();
       ui->doubleSpinBoxMin->setValue(axis.min);
     }
-    if (auto value = settings.value(prefixes.at(i) + "/max"); value.isValid() && i == 1) {
+    if (auto value = settings.value(prefix + "/max"); value.isValid() && i == 1) {
       axis.max = value.toDouble();
       ui->doubleSpinBoxMax->setValue(axis.max);
     }
@@ -481,18 +482,20 @@ void PlotterLineChart::saveConfig() {
 
   QStringList prefixes{"axis/x", "axis/y"};
   for (int i = 0; i < mAxesParams.size(); ++i) {
-    settings.setValue(prefixes.at(i) + "/visible", mAxesParams.at(i).visible);
-    settings.setValue(prefixes.at(i) + "/title", mAxesParams.at(i).title);
-    settings.setValue(prefixes.at(i) + "/log", mAxesParams.at(i).log);
-    settings.setValue(prefixes.at(i) + "/logBase", mAxesParams.at(i).logBase);
-    settings.setValue(prefixes.at(i) + "/titleText", mAxesParams.at(i).titleText);
-    settings.setValue(prefixes.at(i) + "/titleSize", mAxesParams.at(i).titleSize);
-    settings.setValue(prefixes.at(i) + "/labelFormat", mAxesParams.at(i).labelFormat);
-    settings.setValue(prefixes.at(i) + "/labelSize", mAxesParams.at(i).labelSize);
-    settings.setValue(prefixes.at(i) + "/min", mAxesParams.at(i).min);
-    settings.setValue(prefixes.at(i) + "/max", mAxesParams.at(i).max);
-    settings.setValue(prefixes.at(i) + "/ticks", mAxesParams.at(i).ticks);
-    settings.setValue(prefixes.at(i) + "/mticks", mAxesParams.at(i).mticks);
+    const auto& axis = mAxesParams[i];
+    const auto prefix = prefixes[i];
+    settings.setValue(prefix + "/visible", axis.visible);
+    settings.setValue(prefix + "/title", axis.title);
+    settings.setValue(prefix + "/log", axis.log);
+    settings.setValue(prefix + "/logBase", axis.logBase);
+    settings.setValue(prefix + "/titleText", axis.titleText);
+    settings.setValue(prefix + "/titleSize", axis.titleSize);
+    settings.setValue(prefix + "/labelFormat", axis.labelFormat);
+    settings.setValue(prefix + "/labelSize", axis.labelSize);
+    settings.setValue(prefix + "/min", axis.min);
+    settings.setValue(prefix + "/max", axis.max);
+    settings.setValue(prefix + "/ticks", axis.ticks);
+    settings.setValue(prefix + "/mticks", axis.mticks);
   }
 
   settings.endGroup();
