@@ -87,9 +87,8 @@ class PlotterBoxChart : public QWidget {
 
  private:
   struct AxisParam {
-    AxisParam() : visible(true), title(true) {}
-
-    bool visible, title;
+    bool visible{true};
+    bool title{true};
     QString titleText;
     int titleSize, labelSize;
   };
@@ -106,7 +105,7 @@ class PlotterBoxChart : public QWidget {
   QFileSystemWatcher mWatcher;
   SeriesMapping mSeriesMapping;
   double mCurrentTimeFactor;  // from us
-  AxisParam mAxesParams[2];
+  QVector<AxisParam> mAxesParams{2};
   bool mIgnoreEvents = false;
 };
 

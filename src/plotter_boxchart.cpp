@@ -1,17 +1,17 @@
-// Copyright 2019 Guillaume AUJAY. All rights reserved.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+/* Copyright 2019 Guillaume AUJAY. All rights reserved.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "plotter_boxchart.h"
 
@@ -27,10 +27,9 @@
 #include "result_parser.h"
 #include "ui_plotter_boxchart.h"
 
-using namespace QtCharts;
-
-static const char* config_file = "config_boxes.json";
-static const bool force_config = false;
+namespace {
+const bool kForceConfig = false;
+}
 
 PlotterBoxChart::PlotterBoxChart(BenchResults& bchResults, const QVector<int>& bchIdxs,
                                  const PlotParams& plotParams, const QString& origFilename,
@@ -353,178 +352,151 @@ void PlotterBoxChart::setupOptions(bool init) {
 }
 
 void PlotterBoxChart::loadConfig(bool init) {
-  QFile configFile(QString(config_folder) + config_file);
-  if (configFile.open(QIODevice::ReadOnly)) {
-    QByteArray configData = configFile.readAll();
-    configFile.close();
-    QJsonDocument configDoc(QJsonDocument::fromJson(configData));
-    QJsonObject json = configDoc.object();
+  QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+  settings.beginGroup("boxes");
 
-    // Theme
-    if (json.contains("theme") && json["theme"].isString())
-      ui->comboBoxTheme->setCurrentText(json["theme"].toString());
+  if (auto value = settings.value("timeUnit"); value.isValid() && !init)
+    ui->comboBoxTimeUnit->setCurrentText(value.toString());
 
-    // Legend
-    if (json.contains("legend.visible") && json["legend.visible"].isBool())
-      ui->checkBoxLegendVisible->setChecked(json["legend.visible"].toBool());
-    if (json.contains("legend.align") && json["legend.align"].isString())
-      ui->comboBoxLegendAlign->setCurrentText(json["legend.align"].toString());
-    if (json.contains("legend.fontSize") && json["legend.fontSize"].isDouble())
-      ui->spinBoxLegendFontSize->setValue(json["legend.fontSize"].toInt(8));
+  if (auto value = settings.value("autoReload"); value.isValid())
+    ui->checkBoxAutoReload->setChecked(value.toBool());
 
-    // Series
-    if (json.contains("series") && json["series"].isArray()) {
-      auto series = json["series"].toArray();
-      for (int idx = 0; idx < series.size(); ++idx) {
-        QJsonObject config = series[idx].toObject();
-        if (config.contains("oldName") && config["oldName"].isString() &&
-            config.contains("newName") && config["newName"].isString() &&
-            config.contains("newColor") && config["newColor"].isString() &&
-            QColor::isValidColor(config["newColor"].toString())) {
-          SeriesConfig savedConfig(config["oldName"].toString(), "");
-          int iCfg = mSeriesMapping.indexOf(savedConfig);
-          if (iCfg >= 0) {
-            mSeriesMapping[iCfg].newName = config["newName"].toString();
-            mSeriesMapping[iCfg].newColor.setNamedColor(config["newColor"].toString());
-          }
-        }
+  if (auto value = settings.value("theme"); value.isValid())
+    ui->comboBoxTheme->setCurrentText(value.toString());
+
+  if (auto value = settings.value("legend/visible"); value.isValid())
+    ui->checkBoxLegendVisible->setChecked(value.toBool());
+  if (auto value = settings.value("legend/align"); value.isValid())
+    ui->comboBoxLegendAlign->setCurrentText(value.toString());
+  if (auto value = settings.value("legend/fontSize", 8); value.isValid())
+    ui->spinBoxLegendFontSize->setValue(value.toInt());
+
+  int series_size = settings.beginReadArray("series");
+  for (int i = 0; i < series_size; ++i) {
+    settings.setArrayIndex(i);
+    const auto oldname_value = settings.value("oldName");
+    const auto newname_value = settings.value("newName");
+    const auto newcolor_value = settings.value("newColor");
+    const auto newcolor_valid =
+        newcolor_value.isValid() && QColor::isValidColor(newcolor_value.toString());
+
+    if (oldname_value.isValid() && newname_value.isValid() && newcolor_valid) {
+      SeriesConfig saved_config(oldname_value.toString(), "");
+
+      if (int idx = mSeriesMapping.indexOf(saved_config); idx >= 0) {
+        mSeriesMapping[idx].newName = newname_value.toString();
+        mSeriesMapping[idx].newColor.setNamedColor(newcolor_value.toString());
       }
     }
-
-    // Time
-    if (!init) {
-      if (json.contains("timeUnit") && json["timeUnit"].isString())
-        ui->comboBoxTimeUnit->setCurrentText(json["timeUnit"].toString());
-    }
-
-    // Actions
-    if (json.contains("autoReload") && json["autoReload"].isBool())
-      ui->checkBoxAutoReload->setChecked(json["autoReload"].toBool());
-
-    // Axes
-    QString prefix = "axis.x";
-    for (int idx = 0; idx < 2; ++idx) {
-      auto& axis = mAxesParams[idx];
-
-      if (json.contains(prefix + ".visible") && json[prefix + ".visible"].isBool()) {
-        axis.visible = json[prefix + ".visible"].toBool();
-        ui->checkBoxAxisVisible->setChecked(axis.visible);
-      }
-      if (json.contains(prefix + ".title") && json[prefix + ".title"].isBool()) {
-        axis.title = json[prefix + ".title"].toBool();
-        ui->checkBoxTitle->setChecked(axis.title);
-      }
-      if (json.contains(prefix + ".titleSize") && json[prefix + ".titleSize"].isDouble()) {
-        axis.titleSize = json[prefix + ".titleSize"].toInt(8);
-        ui->spinBoxTitleSize->setValue(axis.titleSize);
-      }
-      if (json.contains(prefix + ".labelSize") && json[prefix + ".labelSize"].isDouble()) {
-        axis.labelSize = json[prefix + ".labelSize"].toInt(8);
-        ui->spinBoxLabelSize->setValue(axis.labelSize);
-      }
-      if (!init) {
-        if (json.contains(prefix + ".titleText") && json[prefix + ".titleText"].isString()) {
-          axis.titleText = json[prefix + ".titleText"].toString();
-          ui->lineEditTitle->setText(axis.titleText);
-          ui->lineEditTitle->setCursorPosition(0);
-        }
-      }
-      // x-axis
-      if (idx == 0) {
-        if (force_config) {
-          if (json.contains(prefix + ".min") && json[prefix + ".min"].isString())
-            ui->comboBoxMin->setCurrentText(json[prefix + ".min"].toString());
-          if (json.contains(prefix + ".max") && json[prefix + ".max"].isString())
-            ui->comboBoxMax->setCurrentText(json[prefix + ".max"].toString());
-        }
-      } else  // y-axis
-      {
-        if (json.contains(prefix + ".log") && json[prefix + ".log"].isBool())
-          ui->checkBoxLog->setChecked(json[prefix + ".log"].toBool());
-        if (json.contains(prefix + ".logBase") && json[prefix + ".logBase"].isDouble())
-          ui->spinBoxLogBase->setValue(json[prefix + ".logBase"].toInt(10));
-        if (json.contains(prefix + ".labelFormat") && json[prefix + ".labelFormat"].isString()) {
-          ui->lineEditFormat->setText(json[prefix + ".labelFormat"].toString());
-          ui->lineEditFormat->setCursorPosition(0);
-        }
-        if (json.contains(prefix + ".ticks") && json[prefix + ".ticks"].isDouble())
-          ui->spinBoxTicks->setValue(json[prefix + ".ticks"].toInt(5));
-        if (json.contains(prefix + ".mticks") && json[prefix + ".mticks"].isDouble())
-          ui->spinBoxMTicks->setValue(json[prefix + ".mticks"].toInt(0));
-        if (!init) {
-          if (json.contains(prefix + ".min") && json[prefix + ".min"].isDouble())
-            ui->doubleSpinBoxMin->setValue(json[prefix + ".min"].toDouble());
-          if (json.contains(prefix + ".max") && json[prefix + ".max"].isDouble())
-            ui->doubleSpinBoxMax->setValue(json[prefix + ".max"].toDouble());
-        }
-      }
-
-      prefix = "axis.y";
-      ui->comboBoxAxis->setCurrentIndex(1);
-    }
-    ui->comboBoxAxis->setCurrentIndex(0);
-  } else {
-    if (configFile.exists())
-      qWarning() << "Couldn't read: " << QString(config_folder) + config_file;
   }
+  settings.endArray();
+
+  QStringList prefixes{"axis/x", "axis/y"};
+  for (int i = 0; i < mAxesParams.size(); ++i) {
+    auto& axis = mAxesParams[i];
+    const auto prefix = prefixes[i];
+
+    if (auto value = settings.value(prefix + "/visible"); value.isValid()) {
+      axis.visible = value.toBool();
+      ui->checkBoxAxisVisible->setChecked(axis.visible);
+    }
+    if (auto value = settings.value(prefix + "/title"); value.isValid()) {
+      axis.title = value.toBool();
+      ui->checkBoxTitle->setChecked(axis.title);
+    }
+    if (auto value = settings.value(prefix + "/titleSize", 8); value.isValid()) {
+      axis.titleSize = value.toInt();
+      ui->spinBoxTitleSize->setValue(axis.titleSize);
+    }
+    if (auto value = settings.value(prefix + "/labelSize", 8); value.isValid()) {
+      axis.labelSize = value.toInt();
+      ui->spinBoxLabelSize->setValue(axis.labelSize);
+    }
+    if (auto value = settings.value(prefix + "/titleText"); value.isValid() && !init) {
+      axis.titleText = value.toString();
+      ui->lineEditTitle->setText(axis.titleText);
+      ui->lineEditTitle->setCursorPosition(0);
+    }
+
+    if (i == 0)  // x-axis
+    {
+      if (auto value = settings.value(prefix + "/min"); value.isValid() && kForceConfig)
+        ui->comboBoxMin->setCurrentText(value.toString());
+      if (auto value = settings.value(prefix + "/max"); value.isValid() && kForceConfig)
+        ui->comboBoxMax->setCurrentText(value.toString());
+    } else  // y-axis
+    {
+      if (auto value = settings.value(prefix + "/log"); value.isValid())
+        ui->checkBoxLog->setChecked(value.toBool());
+      if (auto value = settings.value(prefix + "/logBase", 10); value.isValid())
+        ui->spinBoxLogBase->setValue(value.toInt());
+      if (auto value = settings.value(prefix + "/labelFormat"); value.isValid()) {
+        ui->lineEditFormat->setText(value.toString());
+        ui->lineEditFormat->setCursorPosition(0);
+      }
+      if (auto value = settings.value(prefix + "/ticks", 5); value.isValid())
+        ui->spinBoxTicks->setValue(value.toInt());
+      if (auto value = settings.value(prefix + "/mticks", 0); value.isValid())
+        ui->spinBoxMTicks->setValue(value.toInt());
+      if (auto value = settings.value(prefix + "/min"); value.isValid() && !init)
+        ui->doubleSpinBoxMin->setValue(value.toDouble());
+      if (auto value = settings.value(prefix + "/max"); value.isValid() && !init)
+        ui->doubleSpinBoxMax->setValue(value.toDouble());
+    }
+    ui->comboBoxAxis->setCurrentIndex(1);
+  }
+  ui->comboBoxAxis->setCurrentIndex(0);
+  settings.endGroup();
 }
 
 void PlotterBoxChart::saveConfig() {
-  QFile configFile(QString(config_folder) + config_file);
-  if (configFile.open(QIODevice::WriteOnly)) {
-    QJsonObject json;
+  QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+  settings.beginGroup("boxes");
 
-    // Theme
-    json["theme"] = ui->comboBoxTheme->currentText();
-    // Legend
-    json["legend.visible"] = ui->checkBoxLegendVisible->isChecked();
-    json["legend.align"] = ui->comboBoxLegendAlign->currentText();
-    json["legend.fontSize"] = ui->spinBoxLegendFontSize->value();
-    // Series
-    QJsonArray series;
-    for (const auto& seriesConfig : qAsConst(mSeriesMapping)) {
-      QJsonObject config;
-      config["oldName"] = seriesConfig.oldName;
-      config["newName"] = seriesConfig.newName;
-      config["newColor"] = seriesConfig.newColor.name();
-      series.append(config);
+  settings.setValue("autoReload", ui->checkBoxAutoReload->isChecked());
+  settings.setValue("timeUnit", ui->comboBoxTimeUnit->currentText());
+  settings.setValue("theme", ui->comboBoxTheme->currentText());
+
+  settings.setValue("legend/visible", ui->checkBoxLegendVisible->isChecked());
+  settings.setValue("legend/align", ui->comboBoxLegendAlign->currentText());
+  settings.setValue("legend/fontSize", ui->spinBoxLegendFontSize->value());
+
+  settings.beginWriteArray("series");
+  for (int i = 0; i < mSeriesMapping.size(); ++i) {
+    settings.setArrayIndex(i);
+    settings.setValue("oldName", mSeriesMapping.at(i).oldName);
+    settings.setValue("newName", mSeriesMapping.at(i).newName);
+    settings.setValue("newColor", mSeriesMapping.at(i).newColor.name());
+  }
+  settings.endArray();
+
+  QStringList prefixes{"axis/x", "axis/y"};
+  for (int i = 0; i < mAxesParams.size(); ++i) {
+    const auto& axis = mAxesParams[i];
+    const auto prefix = prefixes[i];
+
+    settings.setValue(prefix + "/visible", axis.visible);
+    settings.setValue(prefix + "/title", axis.title);
+    settings.setValue(prefix + "/titleText", axis.titleText);
+    settings.setValue(prefix + "/titleSize", axis.titleSize);
+    settings.setValue(prefix + "/labelSize", axis.labelSize);
+
+    if (i == 0)  // x-axis
+    {
+      settings.setValue(prefix + "/min", ui->comboBoxMin->currentText());
+      settings.setValue(prefix + "/max", ui->comboBoxMax->currentText());
+    } else  // y-axis
+    {
+      settings.setValue(prefix + "/log", ui->checkBoxLog->isChecked());
+      settings.setValue(prefix + "/logBase", ui->spinBoxLogBase->value());
+      settings.setValue(prefix + "/labelFormat", ui->lineEditFormat->text());
+      settings.setValue(prefix + "/min", ui->doubleSpinBoxMin->value());
+      settings.setValue(prefix + "/max", ui->doubleSpinBoxMax->value());
+      settings.setValue(prefix + "/ticks", ui->spinBoxTicks->value());
+      settings.setValue(prefix + "/mticks", ui->spinBoxMTicks->value());
     }
-    if (!series.empty())
-      json["series"] = series;
-    // Time
-    json["timeUnit"] = ui->comboBoxTimeUnit->currentText();
-    // Actions
-    json["autoReload"] = ui->checkBoxAutoReload->isChecked();
-    // Axes
-    QString prefix = "axis.x";
-    for (int idx = 0; idx < 2; ++idx) {
-      const auto& axis = mAxesParams[idx];
-
-      json[prefix + ".visible"] = axis.visible;
-      json[prefix + ".title"] = axis.title;
-      json[prefix + ".titleText"] = axis.titleText;
-      json[prefix + ".titleSize"] = axis.titleSize;
-      json[prefix + ".labelSize"] = axis.labelSize;
-      // x-axis
-      if (idx == 0) {
-        json[prefix + ".min"] = ui->comboBoxMin->currentText();
-        json[prefix + ".max"] = ui->comboBoxMax->currentText();
-      } else  // y-axis
-      {
-        json[prefix + ".log"] = ui->checkBoxLog->isChecked();
-        json[prefix + ".logBase"] = ui->spinBoxLogBase->value();
-        json[prefix + ".labelFormat"] = ui->lineEditFormat->text();
-        json[prefix + ".min"] = ui->doubleSpinBoxMin->value();
-        json[prefix + ".max"] = ui->doubleSpinBoxMax->value();
-        json[prefix + ".ticks"] = ui->spinBoxTicks->value();
-        json[prefix + ".mticks"] = ui->spinBoxMTicks->value();
-      }
-      prefix = "axis.y";
-    }
-
-    configFile.write(QJsonDocument(json).toJson());
-  } else
-    qWarning() << "Couldn't update: " << QString(config_folder) + config_file;
+  }
+  settings.endGroup();
 }
 
 //
