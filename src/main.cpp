@@ -25,7 +25,7 @@
 #include "result_parser.h"
 #include "result_selector.h"
 
-#define APP_NAME "JOMT"
+#define APP_NAME "jomt"
 #define APP_VER "1.0b"
 #define APP_ICON ":/jomt_icon.png"
 
@@ -36,6 +36,7 @@
 int main(int argc, char* argv[]) {
   // Init
   QApplication app(argc, argv);
+  QCoreApplication::setOrganizationName(APP_NAME);
   QCoreApplication::setApplicationName(APP_NAME);
   QCoreApplication::setApplicationVersion(APP_VER);
   QApplication::setWindowIcon(QIcon(APP_ICON));
@@ -73,5 +74,5 @@ int main(int argc, char* argv[]) {
 
   //
   // Execute
-  return app.exec();
+  return QApplication::exec();
 }
