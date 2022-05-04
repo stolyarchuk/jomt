@@ -27,10 +27,28 @@
 #include "result_parser.h"
 #include "ui_plotter_3dsurface.h"
 
-using namespace QtDataVisualization;
+using QtDataVisualization::Q3DBars;
+using QtDataVisualization::Q3DSurface;
+using QtDataVisualization::Q3DTheme;
+using QtDataVisualization::QAbstract3DAxis;
+using QtDataVisualization::QAbstract3DGraph;
+using QtDataVisualization::QAbstract3DSeries;
+using QtDataVisualization::QBar3DSeries;
+using QtDataVisualization::QBarDataItem;
+using QtDataVisualization::QBarDataRow;
+using QtDataVisualization::QCategory3DAxis;
+using QtDataVisualization::QLogValue3DAxisFormatter;
+using QtDataVisualization::QSurface3DSeries;
+using QtDataVisualization::QSurfaceDataArray;
+using QtDataVisualization::QSurfaceDataItem;
+using QtDataVisualization::QSurfaceDataProxy;
+using QtDataVisualization::QSurfaceDataRow;
+using QtDataVisualization::QValue3DAxis;
+using QtDataVisualization::QValue3DAxisFormatter;
 
-static const char* config_file = "config_3dsurface.json";
-static const bool force_config = false;
+namespace {
+const bool kForceConfig = false;
+}
 
 Plotter3DSurface::Plotter3DSurface(const BenchResults& bchResults, const QVector<int>& bchIdxs,
                                    const PlotParams& plotParams, const QString& origFilename,
@@ -517,168 +535,136 @@ void Plotter3DSurface::setupOptions(bool init) {
 }
 
 void Plotter3DSurface::loadConfig(bool init) {
-  QFile configFile(QString(config_folder) + config_file);
-  if (configFile.open(QIODevice::ReadOnly)) {
-    QByteArray configData = configFile.readAll();
-    configFile.close();
-    QJsonDocument configDoc(QJsonDocument::fromJson(configData));
-    QJsonObject json = configDoc.object();
+  QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+  settings.beginGroup("3dsurface");
 
-    // Theme
-    if (json.contains("theme") && json["theme"].isString())
-      ui->comboBoxTheme->setCurrentText(json["theme"].toString());
+  if (auto value = settings.value("timeUnit"); value.isValid() && !init)
+    ui->comboBoxTimeUnit->setCurrentText(value.toString());
 
-    // Surface
-    if (json.contains("surface.flip") && json["surface.flip"].isBool())
-      ui->checkBoxFlip->setChecked(json["surface.flip"].toBool());
-    if (json.contains("surface.gradient") && json["surface.gradient"].isString())
-      ui->comboBoxGradient->setCurrentText(json["surface.gradient"].toString());
+  if (auto value = settings.value("autoReload"); value.isValid())
+    ui->checkBoxAutoReload->setChecked(value.toBool());
 
-    // Series
-    if (json.contains("series") && json["series"].isArray()) {
-      auto series = json["series"].toArray();
-      for (int idx = 0; idx < series.size(); ++idx) {
-        QJsonObject config = series[idx].toObject();
-        if (config.contains("oldName") && config["oldName"].isString() &&
-            config.contains("newName") && config["newName"].isString() &&
-            config.contains("newColor") && config["newColor"].isString() &&
-            QColor::isValidColor(config["newColor"].toString())) {
-          SeriesConfig savedConfig(config["oldName"].toString(), "");
-          int iCfg = mSeriesMapping.indexOf(savedConfig);
-          if (iCfg >= 0) {
-            mSeriesMapping[iCfg].newName = config["newName"].toString();
-            mSeriesMapping[iCfg].newColor.setNamedColor(config["newColor"].toString());
-          }
-        }
+  if (auto value = settings.value("theme"); value.isValid())
+    ui->comboBoxTheme->setCurrentText(value.toString());
+
+  int series_size = settings.beginReadArray("series");
+  for (int i = 0; i < series_size; ++i) {
+    settings.setArrayIndex(i);
+    const auto oldname_value = settings.value("oldName");
+    const auto newname_value = settings.value("newName");
+    const auto newcolor_value = settings.value("newColor");
+    const auto newcolor_valid =
+        newcolor_value.isValid() && QColor::isValidColor(newcolor_value.toString());
+
+    if (oldname_value.isValid() && newname_value.isValid() && newcolor_valid) {
+      SeriesConfig saved_config(oldname_value.toString(), "");
+
+      if (int idx = mSeriesMapping.indexOf(saved_config); idx >= 0) {
+        mSeriesMapping[idx].newName = newname_value.toString();
+        mSeriesMapping[idx].newColor.setNamedColor(newcolor_value.toString());
       }
     }
-
-    // Time
-    if (!init) {
-      if (json.contains("timeUnit") && json["timeUnit"].isString())
-        ui->comboBoxTimeUnit->setCurrentText(json["timeUnit"].toString());
-    }
-
-    // Actions
-    if (json.contains("autoReload") && json["autoReload"].isBool())
-      ui->checkBoxAutoReload->setChecked(json["autoReload"].toBool());
-
-    // Axes
-    QString prefix = "axis.x";
-    for (int idx = 0; idx < 3; ++idx) {
-      auto& axis = mAxesParams[idx];
-
-      if (json.contains(prefix + ".rotate") && json[prefix + ".rotate"].isBool()) {
-        axis.rotate = json[prefix + ".rotate"].toBool();
-        ui->checkBoxAxisRotate->setChecked(axis.rotate);
-      }
-      if (json.contains(prefix + ".title") && json[prefix + ".title"].isBool()) {
-        axis.title = json[prefix + ".title"].toBool();
-        ui->checkBoxTitle->setChecked(axis.title);
-      }
-      if (json.contains(prefix + ".log") && json[prefix + ".log"].isBool()) {
-        axis.log = json[prefix + ".log"].toBool();
-        ui->checkBoxLog->setChecked(axis.log);
-      }
-      if (json.contains(prefix + ".logBase") && json[prefix + ".logBase"].isDouble()) {
-        axis.logBase = json[prefix + ".logBase"].toInt(10);
-        ui->spinBoxLogBase->setValue(axis.logBase);
-      }
-      if (json.contains(prefix + ".labelFormat") && json[prefix + ".labelFormat"].isString()) {
-        axis.labelFormat = json[prefix + ".labelFormat"].toString();
-        ui->lineEditFormat->setText(axis.labelFormat);
-        ui->lineEditFormat->setCursorPosition(0);
-      }
-      if (json.contains(prefix + ".ticks") && json[prefix + ".ticks"].isDouble()) {
-        axis.ticks = json[prefix + ".ticks"].toInt(idx == 1 ? 5 : 8);
-        ui->spinBoxTicks->setValue(axis.ticks);
-      }
-      if (json.contains(prefix + ".mticks") && json[prefix + ".mticks"].isDouble()) {
-        axis.mticks = json[prefix + ".mticks"].toInt(1);
-        ui->spinBoxMTicks->setValue(axis.mticks);
-      }
-      if (!init) {
-        if (json.contains(prefix + ".titleText") && json[prefix + ".titleText"].isString()) {
-          axis.titleText = json[prefix + ".titleText"].toString();
-          ui->lineEditTitle->setText(axis.titleText);
-          ui->lineEditTitle->setCursorPosition(0);
-        }
-        if (idx == 1 || force_config) {
-          if (json.contains(prefix + ".min") && json[prefix + ".min"].isDouble()) {
-            axis.min = json[prefix + ".min"].toDouble();
-            ui->doubleSpinBoxMin->setValue(axis.min);
-          }
-          if (json.contains(prefix + ".max") && json[prefix + ".max"].isDouble()) {
-            axis.max = json[prefix + ".max"].toDouble();
-            ui->doubleSpinBoxMax->setValue(axis.max);
-          }
-        }
-      }
-      if (idx == 0) {
-        prefix = "axis.y";
-        ui->comboBoxAxis->setCurrentIndex(1);
-      } else if (idx == 1) {
-        prefix = "axis.z";
-        ui->comboBoxAxis->setCurrentIndex(2);
-      }
-    }
-    ui->comboBoxAxis->setCurrentIndex(0);
-  } else {
-    if (configFile.exists())
-      qWarning() << "Couldn't read: " << QString(config_folder) + config_file;
   }
+  settings.endArray();
+
+  if (auto value = settings.value("surface/flip"); value.isValid())
+    ui->checkBoxFlip->setChecked(value.toBool());
+  if (auto value = settings.value("surface/gradient"); value.isValid())
+    ui->comboBoxGradient->setCurrentText(value.toString());
+
+  QStringList prefixes{"axis/x", "axis/y", "axis/z"};
+  QList<int> ticks{8, 5, 8};
+  for (int i = 0; i < mAxesParams.size(); ++i) {
+    auto& axis = mAxesParams[i];
+    const auto prefix = prefixes[i];
+    ui->comboBoxAxis->setCurrentIndex(i);
+
+    if (auto value = settings.value("rotate"); value.isValid()) {
+      axis.rotate = value.toBool();
+      ui->checkBoxAxisRotate->setChecked(axis.rotate);
+    }
+    if (auto value = settings.value("title"); value.isValid()) {
+      axis.title = value.toBool();
+      ui->checkBoxTitle->setChecked(axis.title);
+    }
+    if (auto value = settings.value("log"); value.isValid()) {
+      axis.log = value.toBool();
+      ui->checkBoxLog->setChecked(axis.log);
+    }
+    if (auto value = settings.value("logBase", 10); value.isValid()) {
+      axis.logBase = value.toInt();
+      ui->spinBoxLogBase->setValue(axis.logBase);
+    }
+    if (auto value = settings.value("labelFormat"); value.isValid()) {
+      axis.labelFormat = value.toString();
+      ui->lineEditFormat->setText(axis.labelFormat);
+      ui->lineEditFormat->setCursorPosition(0);
+    }
+    if (auto value = settings.value("ticks", ticks[i]); value.isValid()) {
+      axis.ticks = value.toInt();
+      ui->spinBoxTicks->setValue(axis.ticks);
+    }
+    if (auto value = settings.value("mticks", 1); value.isValid()) {
+      axis.mticks = value.toInt();
+      ui->spinBoxMTicks->setValue(axis.mticks);
+    }
+    if (auto value = settings.value("titleText"); value.isValid() && !init) {
+      axis.titleText = value.toString();
+      ui->lineEditTitle->setText(axis.titleText);
+      ui->lineEditTitle->setCursorPosition(0);
+    }
+    if (auto value = settings.value("min"); (i == 1 || kForceConfig) && value.isValid()) {
+      axis.min = value.toDouble();
+      ui->doubleSpinBoxMin->setValue(axis.min);
+    }
+    if (auto value = settings.value("max"); (i == 1 || kForceConfig) && value.isValid()) {
+      axis.max = value.toDouble();
+      ui->doubleSpinBoxMax->setValue(axis.max);
+    }
+  }
+  ui->comboBoxAxis->setCurrentIndex(0);
+
+  settings.endGroup();
 }
 
 void Plotter3DSurface::saveConfig() {
-  QFile configFile(QString(config_folder) + config_file);
-  if (configFile.open(QIODevice::WriteOnly)) {
-    QJsonObject json;
+  QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+  settings.beginGroup("3dsurface");
 
-    // Theme
-    json["theme"] = ui->comboBoxTheme->currentText();
-    // Surface
-    json["surface.flip"] = ui->checkBoxFlip->isChecked();
-    json["surface.gradient"] = ui->comboBoxGradient->currentText();
-    // Series
-    QJsonArray series;
-    for (const auto& seriesConfig : qAsConst(mSeriesMapping)) {
-      QJsonObject config;
-      config["oldName"] = seriesConfig.oldName;
-      config["newName"] = seriesConfig.newName;
-      config["newColor"] = seriesConfig.newColor.name();
-      series.append(config);
-    }
-    if (!series.empty())
-      json["series"] = series;
-    // Time
-    json["timeUnit"] = ui->comboBoxTimeUnit->currentText();
-    // Actions
-    json["autoReload"] = ui->checkBoxAutoReload->isChecked();
-    // Axes
-    QString prefix = "axis.x";
-    for (int idx = 0; idx < 3; ++idx) {
-      const auto& axis = mAxesParams[idx];
+  settings.setValue("autoReload", ui->checkBoxAutoReload->isChecked());
+  settings.setValue("timeUnit", ui->comboBoxTimeUnit->currentText());
+  settings.setValue("theme", ui->comboBoxTheme->currentText());
 
-      json[prefix + ".rotate"] = axis.rotate;
-      json[prefix + ".title"] = axis.title;
-      json[prefix + ".log"] = axis.log;
-      json[prefix + ".logBase"] = axis.logBase;
-      json[prefix + ".titleText"] = axis.titleText;
-      json[prefix + ".labelFormat"] = axis.labelFormat;
-      json[prefix + ".min"] = axis.min;
-      json[prefix + ".max"] = axis.max;
-      json[prefix + ".ticks"] = axis.ticks;
-      json[prefix + ".mticks"] = axis.mticks;
+  settings.beginWriteArray("series");
+  for (int i = 0; i < mSeriesMapping.size(); ++i) {
+    settings.setArrayIndex(i);
+    settings.setValue("oldName", mSeriesMapping.at(i).oldName);
+    settings.setValue("newName", mSeriesMapping.at(i).newName);
+    settings.setValue("newColor", mSeriesMapping.at(i).newColor.name());
+  }
+  settings.endArray();
 
-      if (idx == 0)
-        prefix = "axis.y";
-      else if (idx == 1)
-        prefix = "axis.z";
-    }
+  settings.setValue("surface/flip", ui->checkBoxFlip->isChecked());
+  settings.setValue("surface/gradient", ui->comboBoxGradient->currentText());
 
-    configFile.write(QJsonDocument(json).toJson());
-  } else
-    qWarning() << "Couldn't update: " << QString(config_folder) + config_file;
+  QStringList prefixes{"axis/x", "axis/y", "axis/z"};
+  for (int i = 0; i < mAxesParams.size(); ++i) {
+    const auto& axis = mAxesParams[i];
+    const auto prefix = prefixes[i];
+
+    settings.setValue(prefix + "/rotate", axis.rotate);
+    settings.setValue(prefix + "/title", axis.title);
+    settings.setValue(prefix + "/log", axis.log);
+    settings.setValue(prefix + "/logBase", axis.logBase);
+    settings.setValue(prefix + "/titleText", axis.titleText);
+    settings.setValue(prefix + "/labelFormat", axis.labelFormat);
+    settings.setValue(prefix + "/min", axis.min);
+    settings.setValue(prefix + "/max", axis.max);
+    settings.setValue(prefix + "/ticks", axis.ticks);
+    settings.setValue(prefix + "/mticks", axis.mticks);
+  }
+
+  settings.endGroup();
 }
 
 void Plotter3DSurface::setupGradients() {

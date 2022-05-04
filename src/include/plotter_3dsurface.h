@@ -80,7 +80,6 @@ class Plotter3DSurface : public QWidget {
 
  private:
   struct ValAxisParam {
-    ValAxisParam() : rotate(false), title(false), log(false), logBase(10) {}
     void reset() {
       rotate = false;
       title = false;
@@ -90,10 +89,12 @@ class Plotter3DSurface : public QWidget {
       labelFormat.clear();
     }
 
-    bool rotate, title, log;
+    bool rotate{false};
+    bool title{false};
+    bool log{false};
     QString titleText, labelFormat;
     double min, max;
-    int ticks, mticks, logBase;
+    int ticks, mticks, logBase{10};
   };
   void setupGradients();
 
@@ -109,7 +110,7 @@ class Plotter3DSurface : public QWidget {
   QFileSystemWatcher mWatcher;
   SeriesMapping mSeriesMapping;
   double mCurrentTimeFactor;  // from us
-  ValAxisParam mAxesParams[3];
+  QVector<ValAxisParam> mAxesParams{3};
   QVector<QLinearGradient> mGrads;
   bool mIgnoreEvents = false;
 };
