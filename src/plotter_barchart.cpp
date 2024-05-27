@@ -208,7 +208,7 @@ void PlotterBarChart::setupChart(const BenchResults& bchResults, const QVector<i
 
   bool firstCol = true;
   QStringList prevColLabels;
-  for (const auto& bchSubset : qAsConst(bchSubsets)) {
+  for (const auto& bchSubset : std::as_const(bchSubsets)) {
     // Ignore empty set
     if (bchSubset.idxs.isEmpty()) {
       qWarning() << "No X-value to trace bar for:" << bchSubset.name;
@@ -1062,7 +1062,7 @@ void PlotterBarChart::onReloadClicked() {
     return;
   }
 
-  for (const auto& addFile : qAsConst(mAddFilenames)) {
+  for (const auto& addFile : std::as_const(mAddFilenames)) {
     errorMsg.clear();
     BenchResults newAddResults = ResultParser::parseJsonFile(addFile.filename, errorMsg);
     if (newAddResults.benchmarks.isEmpty()) {
@@ -1102,7 +1102,7 @@ void PlotterBarChart::onReloadClicked() {
 
   if (errorMsg.isEmpty()) {
     const QAbstractBarSeries* oldBarSeries = (QAbstractBarSeries*)oldChartSeries[0];
-    for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+    for (const auto& bchSubset : std::as_const(newBchSubsets)) {
       // Ignore empty set
       if (bchSubset.idxs.isEmpty())
         continue;
@@ -1130,7 +1130,7 @@ void PlotterBarChart::onReloadClicked() {
   if (errorMsg.isEmpty()) {
     newBarSetIdx = 0;
     const QAbstractBarSeries* oldBarSeries = (QAbstractBarSeries*)oldChartSeries[0];
-    for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+    for (const auto& bchSubset : std::as_const(newBchSubsets)) {
       // Ignore empty set
       if (bchSubset.idxs.isEmpty()) {
         qWarning() << "No X-value to trace bar for:" << bchSubset.name;

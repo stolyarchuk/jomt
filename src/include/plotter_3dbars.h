@@ -16,6 +16,7 @@
 #ifndef PLOTTER_3DBARS_H
 #define PLOTTER_3DBARS_H
 
+#include <Q3DBars>
 #include <QFileSystemWatcher>
 #include <QString>
 #include <QVector>
@@ -27,9 +28,9 @@
 namespace Ui {
 class Plotter3DBars;
 }
-namespace QtDataVisualization {
-class Q3DBars;
-}
+// namespace QtDataVisualization {
+// class Q3DBars;
+// }
 struct BenchResults;
 struct FileReload;
 
@@ -101,7 +102,7 @@ class Plotter3DBars : public QWidget {
   void setupGradients();
 
   Ui::Plotter3DBars* ui;
-  QtDataVisualization::Q3DBars* mBars;
+  Q3DBars* mBars;
 
   QVector<int> mBenchIdxs;
   const PlotParams mPlotParams;

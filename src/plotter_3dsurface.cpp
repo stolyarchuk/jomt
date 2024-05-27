@@ -25,18 +25,18 @@
 #include "result_parser.h"
 #include "ui_plotter_3dsurface.h"
 
-using QtDataVisualization::Q3DSurface;
-using QtDataVisualization::Q3DTheme;
-using QtDataVisualization::QAbstract3DGraph;
-using QtDataVisualization::QBarDataRow;
-using QtDataVisualization::QLogValue3DAxisFormatter;
-using QtDataVisualization::QSurface3DSeries;
-using QtDataVisualization::QSurfaceDataArray;
-using QtDataVisualization::QSurfaceDataItem;
-using QtDataVisualization::QSurfaceDataProxy;
-using QtDataVisualization::QSurfaceDataRow;
-using QtDataVisualization::QValue3DAxis;
-using QtDataVisualization::QValue3DAxisFormatter;
+// using QtDataVisualization::Q3DSurface;
+// using QtDataVisualization::Q3DTheme;
+// using QtDataVisualization::QAbstract3DGraph;
+// using QtDataVisualization::QBarDataRow;
+// using QtDataVisualization::QLogValue3DAxisFormatter;
+// using QtDataVisualization::QSurface3DSeries;
+// using QtDataVisualization::QSurfaceDataArray;
+// using QtDataVisualization::QSurfaceDataItem;
+// using QtDataVisualization::QSurfaceDataProxy;
+// using QtDataVisualization::QSurfaceDataRow;
+// using QtDataVisualization::QValue3DAxis;
+// using QtDataVisualization::QValue3DAxisFormatter;
 
 namespace {
 const bool kForceConfig = false;
@@ -213,7 +213,7 @@ void Plotter3DSurface::setupChart(const BenchResults& bchResults, const QVector<
     } else {
       int prevRowSize = 0;
       double zFallback = 0.;
-      for (const auto& bchSubset : qAsConst(bchSubsets)) {
+      for (const auto& bchSubset : std::as_const(bchSubsets)) {
         // Check inter benchmark consistency
         if (prevRowSize > 0 && prevRowSize != bchSubset.idxs.size()) {
           symBchOK = false;
@@ -310,7 +310,7 @@ void Plotter3DSurface::setupChart(const BenchResults& bchResults, const QVector<
 
       QScopedPointer<QSurfaceDataArray> dataArray(new QSurfaceDataArray);
       double zFallback = 0.;
-      for (const auto& bchZSub : qAsConst(bchZSubs)) {
+      for (const auto& bchZSub : std::as_const(bchZSubs)) {
         QString zName = bchZSub.name;
         //                qDebug() << "bchZSub" << bchZSub.name << "|" << bchZSub.idxs;
 
@@ -323,7 +323,7 @@ void Plotter3DSurface::setupChart(const BenchResults& bchResults, const QVector<
         QVector<BenchSubset> bchSubsets = bchResults.groupParam(
             plotParams.xType == PlotArgumentType, bchZSub.idxs, plotParams.xIdx, "X");
         Q_ASSERT(bchSubsets.size() <= 1);
-        for (const auto& bchSubset : qAsConst(bchSubsets)) {
+        for (const auto& bchSubset : std::as_const(bchSubsets)) {
           int index = 0;
           double xFallback = 0.;
           for (int idx : bchSubset.idxs) {
@@ -1158,7 +1158,7 @@ void Plotter3DSurface::onReloadClicked() {
     return;
   }
 
-  for (const auto& addFile : qAsConst(mAddFilenames)) {
+  for (const auto& addFile : std::as_const(mAddFilenames)) {
     errorMsg.clear();
     BenchResults newAddResults = ResultParser::parseJsonFile(addFile.filename, errorMsg);
     if (newAddResults.benchmarks.isEmpty()) {
@@ -1229,7 +1229,7 @@ void Plotter3DSurface::onReloadClicked() {
 
       int prevRowSize = 0;
       int newRowsIdx = 0;
-      for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+      for (const auto& bchSubset : std::as_const(newBchSubsets)) {
         // Check inter benchmark consistency
         if (prevRowSize > 0 && prevRowSize != bchSubset.idxs.size()) {
           errorMsg = "Inconsistent number of X-values between benchmarks to trace surface";
@@ -1252,7 +1252,7 @@ void Plotter3DSurface::onReloadClicked() {
         double zFallback = 0.;
 
         newRowsIdx = 0;
-        for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+        for (const auto& bchSubset : std::as_const(newBchSubsets)) {
           double xFallback = 0.;
           int newColsIdx = 0;
           for (int idx : bchSubset.idxs) {
@@ -1329,7 +1329,7 @@ void Plotter3DSurface::onReloadClicked() {
         }
 
         int newRowsIdx = 0;
-        for (const auto& bchZSub : qAsConst(newBchZSubs)) {
+        for (const auto& bchZSub : std::as_const(newBchZSubs)) {
           const auto& oldRow = oldDataArray->at(newRowsIdx);
           QVector<BenchSubset> newBchSubsets = newBchResults.groupParam(
               mPlotParams.xType == PlotArgumentType, bchZSub.idxs, mPlotParams.xIdx, "X");
@@ -1374,7 +1374,7 @@ void Plotter3DSurface::onReloadClicked() {
 
           double zFallback = 0.;
           int newRowsIdx = 0;
-          for (const auto& bchZSub : qAsConst(newBchZSubs)) {
+          for (const auto& bchZSub : std::as_const(newBchZSubs)) {
             const QString zName = bchZSub.name;
             double zVal = BenchResults::getParamValue(zName, custZName, custZAxis, zFallback);
 

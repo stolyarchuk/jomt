@@ -81,7 +81,7 @@ SeriesDialog::SeriesDialog(const SeriesMapping& mapping, QWidget* parent)
   // Setup form
   ui->formLayout->addRow("<b>Original:</b>", new QLabel("<b>Modified:</b>", this));
 
-  for (const auto& config : qAsConst(mMapping)) {
+  for (const auto& config : std::as_const(mMapping)) {
     ui->formLayout->addRow(config.oldName.isEmpty() ? "<no-name>" : config.oldName,
                            new FieldWidget(config.newName, config.newColor, this));
   }

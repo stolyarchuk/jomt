@@ -179,7 +179,7 @@ void PlotterBoxChart::setupChart(BenchResults& bchResults, const QVector<int>& b
   // Box: one per benchmark % X-param
   QVector<BenchSubset> bchSubsets =
       bchResults.groupParam(plotParams.xType == PlotArgumentType, bchIdxs, plotParams.xIdx, "X");
-  for (const auto& bchSubset : qAsConst(bchSubsets)) {
+  for (const auto& bchSubset : std::as_const(bchSubsets)) {
     // Series = benchmark % X-param
     QScopedPointer<QBoxPlotSeries> series(new QBoxPlotSeries());
 
@@ -959,7 +959,7 @@ void PlotterBoxChart::onReloadClicked() {
     return;
   }
 
-  for (const auto& addFile : qAsConst(mAddFilenames)) {
+  for (const auto& addFile : std::as_const(mAddFilenames)) {
     errorMsg.clear();
     BenchResults newAddResults = ResultParser::parseJsonFile(addFile.filename, errorMsg);
     if (newAddResults.benchmarks.isEmpty()) {
@@ -991,7 +991,7 @@ void PlotterBoxChart::onReloadClicked() {
   const auto& oldChartSeries = mChartView->chart()->series();
   int newSeriesIdx = 0;
   if (errorMsg.isEmpty()) {
-    for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+    for (const auto& bchSubset : std::as_const(newBchSubsets)) {
       if (newSeriesIdx >= oldChartSeries.size())
         break;
 
@@ -1015,7 +1015,7 @@ void PlotterBoxChart::onReloadClicked() {
   // Direct update if compatible
   if (errorMsg.isEmpty()) {
     newSeriesIdx = 0;
-    for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+    for (const auto& bchSubset : std::as_const(newBchSubsets)) {
       // Update points
       QBoxPlotSeries* oldSeries = (QBoxPlotSeries*)oldChartSeries[newSeriesIdx];
       oldSeries->clear();

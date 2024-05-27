@@ -16,6 +16,7 @@
 #ifndef PLOTTER_LINECHART_H
 #define PLOTTER_LINECHART_H
 
+#include <QChartView>
 #include <QFileSystemWatcher>
 #include <QString>
 #include <QVector>
@@ -27,9 +28,9 @@
 namespace Ui {
 class PlotterLineChart;
 }
-namespace QtCharts {
-class QChartView;
-}
+// namespace QtCharts {
+// class QChartView;
+// }
 struct BenchResults;
 struct FileReload;
 
@@ -95,7 +96,7 @@ class PlotterLineChart : public QWidget {
   };
 
   Ui::PlotterLineChart* ui;
-  QtCharts::QChartView* mChartView = nullptr;
+  QChartView* mChartView = nullptr;
 
   QVector<int> mBenchIdxs;
   const PlotParams mPlotParams;

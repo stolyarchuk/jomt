@@ -10,7 +10,7 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
 endif()
 
 # common build and install options
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -31,14 +31,21 @@ else()
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -march=native -mtune=native -Wall -Wextra -pedantic")
 endif()
 
-find_package(Qt5 COMPONENTS Core Widgets Charts DataVisualization REQUIRED)
-  
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  add_compile_options(-fdiagnostics-color=always)
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  add_compile_options(-fcolor-diagnostics)
+endif()
+
+
+find_package(Qt6 COMPONENTS Core Widgets Charts DataVisualization REQUIRED)
+
 set(JOMT_SOURCE_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(JOMT_RESOURCES
-  ${JOMT_SOURCE_DIR}/resources/jomt.qrc)  
-  
+  ${JOMT_SOURCE_DIR}/resources/jomt.qrc)
+
 set(JOMT_FORMS
   ${JOMT_SOURCE_DIR}/ui/mainwindow.ui
   ${JOMT_SOURCE_DIR}/ui/result_selector.ui
@@ -57,7 +64,7 @@ set(JOMT_SOURCES
   ${JOMT_SOURCE_DIR}/plot_parameters.cpp
   ${JOMT_SOURCE_DIR}/commandline_handler.cpp
   ${JOMT_SOURCE_DIR}/result_selector.cpp
-  ${JOMT_SOURCE_DIR}/plotter_linechart.cpp  
+  ${JOMT_SOURCE_DIR}/plotter_linechart.cpp
   ${JOMT_SOURCE_DIR}/plotter_barchart.cpp
   ${JOMT_SOURCE_DIR}/plotter_boxchart.cpp
   ${JOMT_SOURCE_DIR}/plotter_3dbars.cpp
@@ -87,17 +94,17 @@ qt_wrap_ui(JOMT_SOURCES ${JOMT_FORMS})
 add_executable(${PROJECT_NAME}
   ${JOMT_SOURCES}
   ${JOMT_RESOURCES})
-  
+
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR}
   ${JOMT_SOURCE_DIR}/include)
 
 target_link_libraries(${PROJECT_NAME}
-  Qt5::Core
-  Qt5::Widgets
-  Qt5::Charts
-  Qt5::DataVisualization)
-  
+  Qt6::Core
+  Qt6::Widgets
+  Qt6::Charts
+  Qt6::DataVisualization)
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "" FORCE)
 endif()

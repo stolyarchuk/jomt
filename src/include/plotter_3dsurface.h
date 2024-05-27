@@ -16,6 +16,7 @@
 #ifndef PLOTTER_3DSURFACE_H
 #define PLOTTER_3DSURFACE_H
 
+#include <Q3DSurface>
 #include <QFileSystemWatcher>
 #include <QString>
 #include <QVector>
@@ -27,9 +28,9 @@
 namespace Ui {
 class Plotter3DSurface;
 }
-namespace QtDataVisualization {
-class Q3DSurface;
-}
+// namespace QtDataVisualization {
+// class Q3DSurface;
+// }
 struct BenchResults;
 struct FileReload;
 
@@ -99,7 +100,7 @@ class Plotter3DSurface : public QWidget {
   void setupGradients();
 
   Ui::Plotter3DSurface* ui;
-  QtDataVisualization::Q3DSurface* mSurface;
+  Q3DSurface* mSurface;
 
   QVector<int> mBenchIdxs;
   const PlotParams mPlotParams;

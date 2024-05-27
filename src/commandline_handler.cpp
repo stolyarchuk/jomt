@@ -108,7 +108,7 @@ bool CommandLineHandler::process(const QApplication& app) {
   QVector<FileReload> addFilenames;
   if (!apFiles.isEmpty()) {
     QStringList apList = apFiles.split(';', Qt::SkipEmptyParts);
-    for (const auto& fileName : qAsConst(apList)) {
+    for (const auto& fileName : std::as_const(apList)) {
       if (QFile::exists(fileName)) {
         QString errorMsg;
         BenchResults newResults = ResultParser::parseJsonFile(fileName, errorMsg);
@@ -125,7 +125,7 @@ bool CommandLineHandler::process(const QApplication& app) {
   // Overwrite files
   if (!owFiles.isEmpty()) {
     QStringList owList = owFiles.split(';', Qt::SkipEmptyParts);
-    for (const auto& fileName : qAsConst(owList)) {
+    for (const auto& fileName : std::as_const(owList)) {
       if (QFile::exists(fileName)) {
         QString errorMsg;
         BenchResults newResults = ResultParser::parseJsonFile(fileName, errorMsg);

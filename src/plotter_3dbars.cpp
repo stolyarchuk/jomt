@@ -25,18 +25,18 @@
 #include "result_parser.h"
 #include "ui_plotter_3dbars.h"
 
-using QtDataVisualization::Q3DBars;
-using QtDataVisualization::Q3DTheme;
-using QtDataVisualization::QAbstract3DAxis;
-using QtDataVisualization::QAbstract3DGraph;
-using QtDataVisualization::QAbstract3DSeries;
-using QtDataVisualization::QBar3DSeries;
-using QtDataVisualization::QBarDataItem;
-using QtDataVisualization::QBarDataRow;
-using QtDataVisualization::QCategory3DAxis;
-using QtDataVisualization::QLogValue3DAxisFormatter;
-using QtDataVisualization::QValue3DAxis;
-using QtDataVisualization::QValue3DAxisFormatter;
+// using Q3DBars;
+// using Q3DTheme;
+// using QAbstract3DAxis;
+// using QAbstract3DGraph;
+// using QAbstract3DSeries;
+// using QBar3DSeries;
+// using QBarDataItem;
+// using QBarDataRow;
+// using QCategory3DAxis;
+// using QLogValue3DAxisFormatter;
+// using QValue3DAxis;
+// using QValue3DAxisFormatter;
 
 namespace {
 const bool kForceConfig = false;
@@ -195,7 +195,7 @@ void Plotter3DBars::setupChart(const BenchResults& bchResults, const QVector<int
     QVector<BenchSubset> bchSubsets =
         bchResults.groupParam(plotParams.xType == PlotArgumentType, bchIdxs, plotParams.xIdx, "X");
     bool firstCol = true;
-    for (const auto& bchSubset : qAsConst(bchSubsets)) {
+    for (const auto& bchSubset : std::as_const(bchSubsets)) {
       // One row per benchmark * X-group
       QScopedPointer<QBarDataRow> data(new QBarDataRow);
 
@@ -255,7 +255,7 @@ void Plotter3DBars::setupChart(const BenchResults& bchResults, const QVector<int
       QVector<BenchSubset> bchZSubs = bchResults.segmentParam(plotParams.zType == PlotArgumentType,
                                                               bchName.idxs, plotParams.zIdx);
       QStringList curRowLabels;
-      for (const auto& bchZSub : qAsConst(bchZSubs)) {
+      for (const auto& bchZSub : std::as_const(bchZSubs)) {
         //                qDebug() << "bchZSub" << bchZSub.name << "|" << bchZSub.idxs;
         curRowLabels.append(bchZSub.name);
 
@@ -1140,7 +1140,7 @@ void Plotter3DBars::onReloadClicked() {
     return;
   }
 
-  for (const auto& addFile : qAsConst(mAddFilenames)) {
+  for (const auto& addFile : std::as_const(mAddFilenames)) {
     errorMsg.clear();
     BenchResults newAddResults = ResultParser::parseJsonFile(addFile.filename, errorMsg);
     if (newAddResults.benchmarks.isEmpty()) {
@@ -1189,7 +1189,7 @@ void Plotter3DBars::onReloadClicked() {
       }
 
       int newRowsIdx = 0;
-      for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+      for (const auto& bchSubset : std::as_const(newBchSubsets)) {
         const auto& oldRowLabel = oldDataProxy->rowLabels().at(newRowsIdx);
         const QString& subsetName = bchSubset.name;
         if (subsetName != oldRowLabel) {
@@ -1207,7 +1207,7 @@ void Plotter3DBars::onReloadClicked() {
       // Direct update if compatible
       if (errorMsg.isEmpty()) {
         newRowsIdx = 0;
-        for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+        for (const auto& bchSubset : std::as_const(newBchSubsets)) {
           int newColsIdx = 0;
           for (int idx : bchSubset.idxs) {
             // Update item
@@ -1254,7 +1254,7 @@ void Plotter3DBars::onReloadClicked() {
         }
 
         int newRowsIdx = 0;
-        for (const auto& bchZSub : qAsConst(newBchZSubs)) {
+        for (const auto& bchZSub : std::as_const(newBchZSubs)) {
           const auto& oldRowLabel = oldDataProxy->rowLabels().size() < newRowsIdx
                                         ? oldDataProxy->rowLabels().at(newRowsIdx)
                                         : "";
@@ -1290,7 +1290,7 @@ void Plotter3DBars::onReloadClicked() {
           QVector<BenchSubset> newBchZSubs = newBchResults.segmentParam(
               mPlotParams.zType == PlotArgumentType, bchName.idxs, mPlotParams.zIdx);
           int newRowsIdx = 0;
-          for (const auto& bchZSub : qAsConst(newBchZSubs)) {
+          for (const auto& bchZSub : std::as_const(newBchZSubs)) {
             QVector<BenchSubset> newBchSubsets = newBchResults.groupParam(
                 mPlotParams.xType == PlotArgumentType, bchZSub.idxs, mPlotParams.xIdx, "X");
             if (newBchSubsets.empty())

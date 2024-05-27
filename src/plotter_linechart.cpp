@@ -179,7 +179,7 @@ void PlotterLineChart::setupChart(const BenchResults& bchResults, const QVector<
       bchResults.groupParam(plotParams.xType == PlotArgumentType, bchIdxs, plotParams.xIdx, "X");
   bool custDataAxis = true;
   QString custDataName;
-  for (const auto& bchSubset : qAsConst(bchSubsets)) {
+  for (const auto& bchSubset : std::as_const(bchSubsets)) {
     // Ignore single point lines
     if (bchSubset.idxs.size() < 2) {
       qWarning() << "Not enough points to trace line for: " << bchSubset.name;
@@ -908,7 +908,7 @@ void PlotterLineChart::onCheckAutoReload(int state) {
   if (state == Qt::Checked) {
     if (mWatcher.files().empty()) {
       mWatcher.addPath(mOrigFilename);
-      for (const auto& addFilename : qAsConst(mAddFilenames))
+      for (const auto& addFilename : std::as_const(mAddFilenames))
         mWatcher.addPath(addFilename.filename);
     }
   } else {
@@ -935,7 +935,7 @@ void PlotterLineChart::onReloadClicked() {
                           "Error parsing original file: " + mOrigFilename + " -> " + errorMsg);
     return;
   }
-  for (const auto& addFile : qAsConst(mAddFilenames)) {
+  for (const auto& addFile : std::as_const(mAddFilenames)) {
     errorMsg.clear();
     BenchResults newAddResults = ResultParser::parseJsonFile(addFile.filename, errorMsg);
     if (newAddResults.benchmarks.isEmpty()) {
@@ -966,7 +966,7 @@ void PlotterLineChart::onReloadClicked() {
   const auto& oldChartSeries = mChartView->chart()->series();
   int newSeriesIdx = 0;
   if (errorMsg.isEmpty()) {
-    for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+    for (const auto& bchSubset : std::as_const(newBchSubsets)) {
       // Ignore single point lines
       if (bchSubset.idxs.size() < 2)
         continue;
@@ -995,7 +995,7 @@ void PlotterLineChart::onReloadClicked() {
     bool custDataAxis = true;
     QString custDataName;
     newSeriesIdx = 0;
-    for (const auto& bchSubset : qAsConst(newBchSubsets)) {
+    for (const auto& bchSubset : std::as_const(newBchSubsets)) {
       // Ignore single point lines
       if (bchSubset.idxs.size() < 2) {
         qWarning() << "Not enough points to trace line for: " << bchSubset.name;
